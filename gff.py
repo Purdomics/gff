@@ -254,22 +254,29 @@ class Gff:
 # test
 # ==================================================================================================
 if __name__ == '__main__':
-    test = {'gff_read':False, 'gtf_read':True}
+    test = {'gff':True,
+            'gtf':False,
+            'read_all':False,
+            'read_feature': True}
 
-    if test['gff_read']:
+    if test['gff']:
         # read gff, example is from CoGe comparative genomics
-        gff = Gff(file='data/genome.gff')
-        gff.attr_sep = '='
-        gff.read_all()
+        genome = Gff(file='data/genome.gff')
+        genome.attr_sep = '='
+        test_feature = ['mRNA', 'exon']
 
-    if test['gtf_read']:
+    if test['gtf']:
         # read gtf file, example is from stringtie, v2.0.3
-        gtf = Gff(file='data/stringtie.gtf')
-        gtf.attr_sep = ' '
-        gtf.read_all()
+        genome = Gff(file='data/stringtie.gtf')
+        genome.attr_sep = ' '
+        test_feature = ['transcript']
 
-    line = transcripts = gff.read_feature(['mRNA'])
-    sys.stdout.write('{} lines read\n'.format(line))
+    if test['read_all']:
+        genome.read_all()
+
+    if test['read_feature']:
+        nline = transcripts = genome.read_feature(test_feature)
+        sys.stdout.write(f'{nline} lines read\n')
 
     # remove the string 'lcl|' in the sequence names
     # gff.replace_by_column('sequence', 'lcl|', '')
