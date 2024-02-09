@@ -18,6 +18,11 @@ class Gff:
         After reading the attribute column is split into key-value pairs and the keys used to
         store each attribute separately in the dict.
 
+        data: list of dicts
+        gff_in: filehandle for gff file
+        attr_sep: the inner separator for attributes. key-value pairs are separated by ; and the
+            keys and values separated by attr_sep
+
         :param file:
         -----------------------------------------------------------------------------------------"""
         self.data = []
