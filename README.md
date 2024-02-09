@@ -1,4 +1,4 @@
-#Purdomics gff
+# Purdomics gff
 
 Reading, writing and manipulating GFF and GTF files
 
