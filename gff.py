@@ -1,12 +1,22 @@
+"""#################################################################################################
+gff.py
+
+contains Gff class
+#################################################################################################"""
 import sys
 import re
 
 
 class Gff:
-    ################################################################################################
+    """=============================================================================================
+    Class for manipulating both GFF and GTF files
+
+     9 October 2019    Michael Gribskov
+    ============================================================================================="""
+
     # gff.py
     #
-    # 9 October 2019    Michael Gribskov
+    #
     ################################################################################################
 
     column = ['sequence', 'method', 'feature', 'begin', 'end', 'score', 'strand', 'frame',
@@ -257,12 +267,12 @@ if __name__ == '__main__':
     genome = None
     test_feature = ''
     test_value = ['', '']
-    test = {'gff':False,
-            'gtf':True,
-            'read_all':True,
+    test = {'gff':          False,
+            'gtf':          True,
+            'read_all':     True,
             'read_feature': False,
             'get_by_value': True,
-            'examples': True}
+            'examples':     True}
 
     if test['gff']:
         # read gff, example is from CoGe comparative genomics
@@ -287,11 +297,11 @@ if __name__ == '__main__':
 
     if test['get_by_value']:
         # get_by_value is a generator function
-        id = 'ID'
+        geneid = 'ID'
         if test['gtf']:
-            id = 'transcript_id'
+            geneid = 'transcript_id'
         for n, data in genome.get_by_value(test_value[0], test_value[1]):
-            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[id]}")
+            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[geneid]}")
 
     if test['examples']:
         # some examples of other functions
@@ -305,41 +315,12 @@ if __name__ == '__main__':
 
         # transcripts is a generator function
         feature = 'mrna'
-        id = 'ID'
+        geneid = 'ID'
         if test['gtf']:
             feature = 'transcript'
-            id = 'transcript_id'
+            geneid = 'transcript_id'
 
         for n, data in genome.get_by_feature(feature):
-            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[id]}")
-    #
-    # for (end, transcript) in transcripts:
-    #     # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['gene_id'],
-    #     #                                        transcript['transcript_id'],
-    #     #                                        transcript['sequence']
-    #     #                                        ))
-    #     sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
-    #                                            transcript['ID'],
-    #                                            transcript['sequence']
-    #                                            ))
-    #
-    #     for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, end):
-    #         print('\t{}\t{}\t{}\t{}'.
-    #               # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
-    #               format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
-    #
-    #     begin = end
-    #
-    # # the final transcript
-    # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
-    #                                        transcript['ID'],
-    #                                        transcript['sequence']
-    #                                        ))
-    # for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, len(gff.data)):
-    #     print('\t{}\t{}\t{}\t{}'.
-    #           # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
-    #           format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
-    #
-    # # print(flist)
+            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[geneid]}")
 
     exit(0)
