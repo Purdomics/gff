@@ -254,17 +254,20 @@ class Gff:
 # test
 # ==================================================================================================
 if __name__ == '__main__':
+    test = {'gff_read':False, 'gtf_read':True}
 
-    # read gff, example is from CoGe comparative genomics
-    gff = Gff(file='data/genome.gff')
-    gff.attr_sep = '='
-    gff.read_all()
+    if test['gff_read']:
+        # read gff, example is from CoGe comparative genomics
+        gff = Gff(file='data/genome.gff')
+        gff.attr_sep = '='
+        gff.read_all()
 
-    # line = 0
-    # while gff.read():
-    #     line += 1
+    if test['gtf_read']:
+        # read gtf file, example is from stringtie, v2.0.3
+        gtf = Gff(file='data/stringtie.gtf')
+        gtf.attr_sep = ' '
+        gtf.read_all()
 
-    # line = gff.read_all()
     line = transcripts = gff.read_feature(['mRNA'])
     sys.stdout.write('{} lines read\n'.format(line))
 
