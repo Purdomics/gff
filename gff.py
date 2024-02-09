@@ -13,6 +13,13 @@ class Gff:
               'attribute']
 
     def __init__(self, file=""):
+        """-----------------------------------------------------------------------------------------
+        Data is initially stored as a list of dicts with the keys in the class variable column.
+        After reading the attribute column is split into key-value pairs and the keys used to
+        store each attribute separately in the dict.
+
+        :param file:
+        -----------------------------------------------------------------------------------------"""
         self.data = []
         self.gff_in = None
         self.attr_sep = ' '
@@ -90,7 +97,12 @@ class Gff:
 
     def feature_parse(self):
         """-----------------------------------------------------------------------------------------
-        parse a feature line
+        parse a feature line. the final field holds attributes in key value format. for GFF,
+        the format is
+        Parent=maker-Ctg0001-augustus-gene-0.4;ID=maker-Ctg0001-augustus-gene-0.4.mRNA1;Name=maker-Ctg0001-augustus-gene-0.4.mRNA1;Alias=maker-Ctg0001-augustus-gene-0.4,maker-Ctg0001-augustus-gene-0.4-mRNA-1;mRNA=maker-Ctg0001-augustus-gene-0.4.mRNA1;coge_fid=936743213
+        for GTF is is
+        gene_id "MSTRG.13"; transcript_id "MSTRG.13.3"; exon_number "1";
+
         :return:
         -----------------------------------------------------------------------------------------"""
         field = self.line.split(maxsplit=8)
@@ -99,7 +111,7 @@ class Gff:
             # extract the 9 defined columns
             parsed[Gff.column[i]] = field[i]
 
-        # split the attributs on ; and restore as a hash
+        # split the attributes on ; and restore as a hash
 
         field = parsed['attribute'].rstrip().split(';')
         # attribute may end in; so last field may be blank
@@ -115,6 +127,11 @@ class Gff:
         return parsed
 
     def comment_parse(self):
+        """-----------------------------------------------------------------------------------------
+        Parse comments, not implemented
+
+        :return: True
+        -----------------------------------------------------------------------------------------"""
         pass
         return True
 
