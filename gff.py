@@ -3,16 +3,16 @@ import re
 
 
 class Gff:
-    ####################################################################################################
+    ################################################################################################
     # gff.py
     #
     # 9 October 2019    Michael Gribskov
-    ####################################################################################################
+    ################################################################################################
 
     column = ['sequence', 'method', 'feature', 'begin', 'end', 'score', 'strand', 'frame',
               'attribute']
 
-    def __init__(self, file=""):
+    def __init__(self, file="", mode="GFF"):
         """-----------------------------------------------------------------------------------------
         Data is initially stored as a list of dicts with the keys in the class variable column.
         After reading the attribute column is split into key-value pairs and the keys used to
@@ -23,31 +23,36 @@ class Gff:
         attr_sep: the inner separator for attributes. key-value pairs are separated by ; and the
             keys and values separated by attr_sep
 
-        :param file:
+        :param file: string     path to file with GFF/GTF data
+        :param mode: string     should be 'GFF' or 'GTF'
         -----------------------------------------------------------------------------------------"""
         self.data = []
         self.gff_in = None
-        self.attr_sep = ' '
+        self.mode = mode
+        self.attr_sep = '='
+        if mode == 'GTF':
+            self.attr_sep = ' '
 
         if file:
-            fh = self.open(file)
-            if fh:
-                self.gff_in = fh
+            self.open(file)
 
     def open(self, file):
         """-----------------------------------------------------------------------------------------
-        open a file for reading
+        safely open a file for reading
 
-        :param self:
+        :param self: gff
         :param file: str, path to a GFF file
         :return: fh or False if unsuccessful
         -----------------------------------------------------------------------------------------"""
         try:
             fh = open(file, 'r')
-            return fh
+
         except IOError:
             sys.stderr.write("gff.open unable to open GFF file ({})".format(file))
-            return False
+            exit(1)
+
+        self.gff_in = fh
+        return fh
 
     def read(self):
         """-----------------------------------------------------------------------------------------
@@ -55,13 +60,13 @@ class Gff:
 
         :return:
         -----------------------------------------------------------------------------------------"""
-        self.line = self.gff_in.readline().rstrip()
+        line = self.gff_in.readline().rstrip()
 
-        if self.line:
-            if self.line.startswith('#'):
+        if line:
+            if line.startswith('#'):
                 self.comment_parse()
             else:
-                self.data.append(self.feature_parse())
+                self.data.append(self.feature_parse(line))
 
             return True
 
@@ -71,36 +76,38 @@ class Gff:
 
     def read_all(self):
         """-----------------------------------------------------------------------------------------
-        read the entire file into memory
+        read the entire file, all features, into self.data. lines are parsed.
 
         :return: int, number of lines read
         -----------------------------------------------------------------------------------------"""
-        line = 0
-        while gff.read():
-            line += 1
+        nline = 0
+        while self.read():
+            nline += 1
 
-        return line
+        return nline
 
     def read_feature(self, feature_list):
         """-----------------------------------------------------------------------------------------
-        Read the whole file and store only features in feature_list
+        Read the whole file and store only features in feature_list in self.data
 
         :param feature_list:
-        :return: int, number of reatures read
+        :return: int, number of features read
         -----------------------------------------------------------------------------------------"""
         count = 0
-        for self.line in self.gff_in:
-            if self.line:
-                if self.line.startswith('#'):
+        for line in self.gff_in:
+            if line:
+                if line.startswith('#'):
                     self.comment_parse()
+
                 else:
-                    parsed = self.feature_parse()
+                    parsed = self.feature_parse(line)
                     if parsed['feature'] in feature_list:
                         self.data.append(parsed)
                         count += 1
+
         return count
 
-    def feature_parse(self):
+    def feature_parse(self, line):
         """-----------------------------------------------------------------------------------------
         parse a feature line. the final field holds attributes in key value format. for GFF,
         the format is
@@ -110,7 +117,7 @@ class Gff:
 
         :return:
         -----------------------------------------------------------------------------------------"""
-        field = self.line.split(maxsplit=8)
+        field = line.split(maxsplit=8)
         parsed = {}
         for i in range(len(field)):
             # extract the 9 defined columns
@@ -118,7 +125,7 @@ class Gff:
 
         # split the attributes on ; and restore as a hash
 
-        field = parsed['attribute'].rstrip().split(';')
+        field = parsed['attribute'].rstrip().split(self.attr_sep)
         # attribute may end in; so last field may be blank
         if not field[-1]:
             field.pop()
@@ -157,7 +164,7 @@ class Gff:
 
     def get_by_value(self, column, key, start=0, stop=0):
         """-----------------------------------------------------------------------------------------
-        A generator that returns rows where the speicified column matches the specified value.
+        A generator that returns rows where the specified column matches the specified value.
         Rows missing columns, e.g., those generated from attributes, are skipped
 
         :param column: str, predefined or attribute column
@@ -183,7 +190,7 @@ class Gff:
         """-----------------------------------------------------------------------------------------
         Replace all of find by replace in column
 
-        :param column: str, name of a predifined or attribute column
+        :param column: str, name of a predefined or attribute column
         :param find: str, string to replace
         :param replace: string to substitute for find
         :return: int, rows examined
