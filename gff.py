@@ -254,22 +254,28 @@ class Gff:
 # test
 # ==================================================================================================
 if __name__ == '__main__':
+    genome = None
+    test_feature = ''
+    test_value = ['', '']
     test = {'gff':True,
             'gtf':False,
-            'read_all':False,
-            'read_feature': True}
+            'read_all':True,
+            'read_feature': False,
+            'get_by_value': True}
 
     if test['gff']:
         # read gff, example is from CoGe comparative genomics
         genome = Gff(file='data/genome.gff')
         genome.attr_sep = '='
         test_feature = ['mRNA', 'exon']
+        test_value = ['sequence', 'Ctg0001']
 
     if test['gtf']:
         # read gtf file, example is from stringtie, v2.0.3
         genome = Gff(file='data/stringtie.gtf')
         genome.attr_sep = ' '
         test_feature = ['transcript']
+        test_value = ['gene_id', 'MSTRG.1']
 
     if test['read_all']:
         genome.read_all()
@@ -278,43 +284,51 @@ if __name__ == '__main__':
         nline = transcripts = genome.read_feature(test_feature)
         sys.stdout.write(f'{nline} lines read\n')
 
-    # remove the string 'lcl|' in the sequence names
-    # gff.replace_by_column('sequence', 'lcl|', '')
-    query = r'(maker|augustus|masked|processed|gene)(-|_)'
-    gff.replace_columns_re(['Parent', 'ID'], query, r'')
+    if test['get_by_value']:
+        select = genome.get_by_value(test_value[0], test_value[1])
+        id = 'ID'
+        if test['gtf']:
+            id = 'transcript_id'
+        for n, data in select:
+            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[id]}")
 
-    # transcripts is a generator function
-    # transcripts = gff.get_by_feature('transcript')
-    transcripts = gff.get_by_feature('mRNA')
-    (begin, transcript) = next(transcripts)
-
-    for (end, transcript) in transcripts:
-        # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['gene_id'],
-        #                                        transcript['transcript_id'],
-        #                                        transcript['sequence']
-        #                                        ))
-        sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
-                                               transcript['ID'],
-                                               transcript['sequence']
-                                               ))
-
-        for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, end):
-            print('\t{}\t{}\t{}\t{}'.
-                  # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
-                  format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
-
-        begin = end
-
-    # the final transcript
-    sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
-                                           transcript['ID'],
-                                           transcript['sequence']
-                                           ))
-    for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, len(gff.data)):
-        print('\t{}\t{}\t{}\t{}'.
-              # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
-              format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
-
-    # print(flist)
+    # # remove the string 'lcl|' in the sequence names
+    # # gff.replace_by_column('sequence', 'lcl|', '')
+    # query = r'(maker|augustus|masked|processed|gene)(-|_)'
+    # gff.replace_columns_re(['Parent', 'ID'], query, r'')
+    #
+    # # transcripts is a generator function
+    # # transcripts = gff.get_by_feature('transcript')
+    # transcripts = gff.get_by_feature('mRNA')
+    # (begin, transcript) = next(transcripts)
+    #
+    # for (end, transcript) in transcripts:
+    #     # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['gene_id'],
+    #     #                                        transcript['transcript_id'],
+    #     #                                        transcript['sequence']
+    #     #                                        ))
+    #     sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
+    #                                            transcript['ID'],
+    #                                            transcript['sequence']
+    #                                            ))
+    #
+    #     for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, end):
+    #         print('\t{}\t{}\t{}\t{}'.
+    #               # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
+    #               format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
+    #
+    #     begin = end
+    #
+    # # the final transcript
+    # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['Parent'],
+    #                                        transcript['ID'],
+    #                                        transcript['sequence']
+    #                                        ))
+    # for (exon_n, exon) in gff.get_by_value('feature', 'exon', begin, len(gff.data)):
+    #     print('\t{}\t{}\t{}\t{}'.
+    #           # format(exon['exon_number'], exon['begin'], exon['end'], exon['strand']))
+    #           format(exon['ID'], exon['begin'], exon['end'], exon['strand']))
+    #
+    # # print(flist)
 
     exit(0)
