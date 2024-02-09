@@ -125,7 +125,7 @@ class Gff:
 
         # split the attributes on ; and restore as a hash
 
-        field = parsed['attribute'].rstrip().split(self.attr_sep)
+        field = parsed['attribute'].rstrip().split(';')
         # attribute may end in; so last field may be blank
         if not field[-1]:
             field.pop()
@@ -255,9 +255,10 @@ class Gff:
 # ==================================================================================================
 if __name__ == '__main__':
 
-    # gff = Gff(file='stringtie.gff')
-    gff = Gff(file='genome.gff')
+    # read gff, example is from CoGe comparative genomics
+    gff = Gff(file='data/genome.gff')
     gff.attr_sep = '='
+    gff.read_all()
 
     # line = 0
     # while gff.read():
