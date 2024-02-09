@@ -160,7 +160,7 @@ class Gff:
             if data[n]['feature'] == key:
                 yield n, data[n]
 
-        raise StopIteration
+        return
 
     def get_by_value(self, column, key, start=0, stop=0):
         """-----------------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ class Gff:
             if data[n][column] == key:
                 yield n, data[n]
 
-        raise StopIteration
+        return
 
     def replace_by_column(self, column, find, replace):
         """-----------------------------------------------------------------------------------------
@@ -257,11 +257,12 @@ if __name__ == '__main__':
     genome = None
     test_feature = ''
     test_value = ['', '']
-    test = {'gff':True,
-            'gtf':False,
+    test = {'gff':False,
+            'gtf':True,
             'read_all':True,
             'read_feature': False,
-            'get_by_value': True}
+            'get_by_value': True,
+            'examples': True}
 
     if test['gff']:
         # read gff, example is from CoGe comparative genomics
@@ -285,22 +286,32 @@ if __name__ == '__main__':
         sys.stdout.write(f'{nline} lines read\n')
 
     if test['get_by_value']:
-        select = genome.get_by_value(test_value[0], test_value[1])
+        # get_by_value is a generator function
         id = 'ID'
         if test['gtf']:
             id = 'transcript_id'
-        for n, data in select:
+        for n, data in genome.get_by_value(test_value[0], test_value[1]):
             print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[id]}")
 
-    # # remove the string 'lcl|' in the sequence names
-    # # gff.replace_by_column('sequence', 'lcl|', '')
-    # query = r'(maker|augustus|masked|processed|gene)(-|_)'
-    # gff.replace_columns_re(['Parent', 'ID'], query, r'')
-    #
-    # # transcripts is a generator function
-    # # transcripts = gff.get_by_feature('transcript')
-    # transcripts = gff.get_by_feature('mRNA')
-    # (begin, transcript) = next(transcripts)
+    if test['examples']:
+        # some examples of other functions
+        # remove the string 'lcl|' in the sequence names
+        target = 'lcl|'
+        genome.replace_by_column('sequence', target, '')
+
+        # with regular expression
+        query = r'(maker|augustus|masked|processed|gene)(-|_)'
+        genome.replace_columns_re(['Parent', 'ID'], query, r'')
+
+        # transcripts is a generator function
+        feature = 'mrna'
+        id = 'ID'
+        if test['gtf']:
+            feature = 'transcript'
+            id = 'transcript_id'
+
+        for n, data in genome.get_by_feature(feature):
+            print(f"sequence:{data['sequence']}\t{data['begin']}\t{data['end']}\t\t{data[id]}")
     #
     # for (end, transcript) in transcripts:
     #     # sys.stdout.write('{}\t{}\t{}\n'.format(transcript['gene_id'],
