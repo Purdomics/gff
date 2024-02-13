@@ -133,6 +133,12 @@ class Gff:
             # extract the 9 defined columns
             parsed[Gff.column[i]] = field[i]
 
+        # set numerical fields to int
+        for col in ('begin', 'end', 'frame'):
+            if parsed[col] != '.':
+                parsed[col] = int(parsed[col])
+        # parsed['score'] = float(parsed['score']) # score is usually '.'
+
         # split the attributes on ; and restore as a hash
 
         field = parsed['attribute'].rstrip().split(';')
