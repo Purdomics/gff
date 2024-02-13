@@ -1,0 +1,1 @@
+This directory is for small test files, please do not commit large files such entire genomes or genome annotations
