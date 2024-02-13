@@ -144,7 +144,7 @@ def merge(merge, t):
     
 if __name__ == '__main__':
 
-    sgff = Gff(file="stranded.merged.stringtie.gff")
+    sgff = Gff(file="stranded.merged.stringtie.gtf")
     transcript_n = sgff.read_feature('transcript')
     print('{} stranded features read'.format(transcript_n))
     sgff.replace_columns_re(['sequence'], 'lcl\|', r'')
@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     sbundle = make_bundle(sgff)
 
-    ugff = Gff(file="unstranded.merged.stringtie.gff")
+    ugff = Gff(file="unstranded.merged.stringtie.gtf")
     transcript_n = ugff.read_feature('transcript')
     print('{} unstranded features read'.format(transcript_n))
     ugff.replace_columns_re(['sequence'], 'lcl\|', r'')
