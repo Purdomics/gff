@@ -6,6 +6,11 @@ contains Gff class
 import sys
 import re
 
+class Dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
 
 class Gff:
     """=============================================================================================
@@ -13,11 +18,6 @@ class Gff:
 
      9 October 2019    Michael Gribskov
     ============================================================================================="""
-
-    # gff.py
-    #
-    #
-    ################################################################################################
 
     column = ['sequence', 'method', 'feature', 'begin', 'end', 'score', 'strand', 'frame',
               'attribute']
