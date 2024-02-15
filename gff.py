@@ -6,15 +6,19 @@ contains Gff class
 import sys
 import re
 
+
 class Dotdict(dict):
     """dot.notation access to dictionary attributes"""
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
+
 class Gff:
     """=============================================================================================
     Class for manipulating both GFF and GTF files
+    Note that the contents of data are not explicitly defined so they can be extended without
+    subclassing
 
      9 October 2019    Michael Gribskov
     ============================================================================================="""
@@ -38,10 +42,9 @@ class Gff:
         -----------------------------------------------------------------------------------------"""
         self.data = []
         self.gff_in = None
-        self.mode = mode
+        self.mode = 'GFF'
         self.attr_sep = '='
-        if mode == 'GTF':
-            self.attr_sep = ' '
+        self.setmode(mode)
 
         if file:
             self.open(file)
@@ -63,6 +66,50 @@ class Gff:
 
         self.gff_in = fh
         return fh
+
+    def setmode(self, mode):
+        """-----------------------------------------------------------------------------------------
+        changing from GFF to GTF mode requires changing the attribute separator self.attr_set
+        :param mode: string     'GFF' or 'GTF'
+        :return: string         new value for self.mode
+        -----------------------------------------------------------------------------------------"""
+        if self.mode == mode:
+            # correct mode is already set
+            return
+        elif mode == 'GFF':
+            self.mode == 'GFF'
+            self.attr_sep = '='
+        elif mode == 'GTF':
+            self.mode == 'GTF'
+            self.attr_sep = ' '
+        else:
+            sys.stderr.write(f'gff.setmode - unknown mode ({mode}), mode is {self.mode}')
+
+        return self.mode
+
+    def attribute_add(self, attr, value, begin=0, end=0):
+        """-----------------------------------------------------------------------------------------
+        Add an attribute to the data list with name attr and value value. if begin and end are not
+        provided, the attribute is added to every row
+
+        :param attr: string     key for new attribute
+        :param value: any       initial value for new attribute
+        :param begin: int       first row
+        :param end: int         last row to modify + 1
+        :return: int            number of rows modified
+        -----------------------------------------------------------------------------------------"""
+        if end == 0:
+            end = len(self.data)
+
+        # check that attr is unique
+        if attr in self.data[begin]:
+            sys.stderr.write(f'Gff.attribute_add - attribute ({attr}) already exists in Gff.data')
+            return 0
+
+        for row in self.data[begin:end]:
+            row[attr] = value
+
+        return end - begin
 
     def read(self):
         """-----------------------------------------------------------------------------------------
