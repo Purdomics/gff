@@ -87,7 +87,7 @@ if __name__ == '__main__':
     sys.stderr.write(f'stringtie_to_genome {runstart}\n')
     sys.stderr.write(f'\tGFF annotation file: {opt.gff}\n')
     sys.stderr.write(f'\tGTF strintie merged file: {opt.gtf}\n')
-    sys.stderr.write(f'\tGFF output file: {opt.output}\n')
+    sys.stderr.write(f'\tGFF output file: {opt.output}\n\n')
 
     # read both genes and transcripts into the same gff object
     # genome gff
@@ -110,18 +110,47 @@ if __name__ == '__main__':
     for row in genome.data:
         row['sequence'] = row['sequence'] + row['strand']
 
+    gff_template = Dotdict({'sequence': '', 'method': 'stringtie_to_genome', 'feature': 'gene',
+                            'begin':    0, 'end': 0, 'score': '.', 'strand': '', 'frame': '.', 'attribute': ''})
+
+    out = None
     g_order = seq_begin_sorter(genome)
     n_overlap = 0
     for group in overlap(g_order):
-        print(f'overlap group {n_overlap}')
+        sys.stderr.write(f'overlap group {n_overlap}\n')
         n_overlap += 1
 
+        begin_min = sys.maxsize
+        end_max = 0
+        cluster_members = ''
+        entry = None
         for entry in group:
             if entry.source == 'GFF':
                 seqid = entry.ID
             else:
                 seqid = entry.transcript_id
 
-            print(f"{entry.sequence}\t{seqid}\t{entry.begin}\t{entry.end}\t{entry.strand}\t{entry.source}")
+            begin_min = min(entry.begin, begin_min)
+            end_max = max(entry.end, end_max)
+            cluster_members += f'ID={seqid};'
+
+            sys.stderr.write(f"{entry.sequence}\t{seqid}\t{entry.begin}\t{entry.end}\t{entry.strand}\t{entry.source}\n")
+
+        # wrtite in GFF format
+        out = open(opt.output, 'w')
+        gff = Dotdict(gff_template.copy())
+        gff.sequence = entry.sequence[:-1]  # remove +/- added for sorting by strand
+        gff.begin = begin_min
+        gff.end = end_max
+        gff.strand = entry.strand
+        gff.attribute = cluster_members
+        line = ''
+        for field in Gff.column:
+            line += f'{gff[field]}\t'
+
+        out.write(f'{line.rstrip()}\n')
+
+    # end of loop over overlapping groups
+    out.close()
 
     exit(0)
