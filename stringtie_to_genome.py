@@ -20,6 +20,7 @@ def seq_begin_sorter(data):
 
     return
 
+
 def advance_sequence(ggen, sgen):
     """---------------------------------------------------------------------------------------------
     advance the pointer that is behind until both are on the chromosome. Assumes that g and s are
@@ -37,13 +38,11 @@ def advance_sequence(ggen, sgen):
     return True
 
 
-
-
-
 # --------------------------------------------------------------------------------------------------
 # main program
 # --------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
+    # read both genes and transcripts into the same gff object
     # genome gff
     genome_file = 'data/phyllachora.gff'
     genome = Gff(file=genome_file, mode='GFF')
@@ -52,46 +51,17 @@ if __name__ == '__main__':
 
     # stringtie gtf
     stringtie_file = 'data/merged.gtf'
-    transcripts = Gff(file=stringtie_file, mode='GTF')
-    n_transcripts = transcripts.read_feature(['transcript'])
+    genome.open(stringtie_file)
+    genome.setmode('GTF')
+    n_transcripts = genome.read_feature(['transcript'])
     sys.stderr.write(f'{n_transcripts} transcripts read from {stringtie_file}\n')
 
-    s_order = seq_begin_sorter(transcripts)
-    # for entry in s_order:
-    #     print(f"{entry.sequence}\t{entry.begin}\t{entry.end}")
+    # add attribute to data to store the source of the data
+    genome.attribute_add('source', 'GFF', 0, n_genes)
+    genome.attribute_add('source', 'GTF', n_genes, n_genes + n_transcripts)
 
     g_order = seq_begin_sorter(genome)
-    # for entry in g_order:
-    #     print(f"{entry.sequence}\t{entry.begin}\t{entry.end}")
-
-    # for each stringtie transcript, advance the genome pointer until the end coordinate is past the stringtie-begin
-    # coordinate
-
-    s = next(s_order)
-    g = next(g_order)
-    while True:
-        if g.sequence < s.sequence:
-            print(f"    gs   {s.sequence}\t{s.begin}\t{s.end}\t\t{g.sequence}\t{g.begin}\t{g.end}")
-            g = next(g_order)
-            continue
-        elif g.sequence > s.sequence:
-            print(f"    ss   {s.sequence}\t{s.begin}\t{s.end}\t\t{g.sequence}\t{g.begin}\t{g.end}")
-            s = next(s_order)
-            continue
-
-        # if you reach here its g and s are on the same sequence
-
-        if g.begin > s.end:
-            print(f"    sa   {s.sequence}\t{s.begin}\t{s.end}\t\t{g.sequence}\t{g.begin}\t{g.end}")
-            s = next(s_order)
-            continue
-        elif g.end < s.begin:
-            print(f"    ga   {s.sequence}\t{s.begin}\t{s.end}\t\t{g.sequence}\t{g.begin}\t{g.end}")
-            g = next(g_order)
-            continue
-        else:
-            print(f"ovverlap {s.sequence}\t{s.begin}\t{s.end}\t\t{g.sequence}\t{g.begin}\t{g.end}")
-
-
+    for entry in g_order:
+        print(f"{entry.sequence}\t{entry.begin}\t{entry.end}\t{entry.source}")
 
     exit(0)
