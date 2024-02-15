@@ -113,7 +113,7 @@ if __name__ == '__main__':
     gff_template = Dotdict({'sequence': '', 'method': 'stringtie_to_genome', 'feature': 'gene',
                             'begin':    0, 'end': 0, 'score': '.', 'strand': '', 'frame': '.', 'attribute': ''})
 
-    out = None
+    out = open(opt.output, 'w')
     g_order = seq_begin_sorter(genome)
     n_overlap = 0
     for group in overlap(g_order):
@@ -137,7 +137,6 @@ if __name__ == '__main__':
             sys.stderr.write(f"{entry.sequence}\t{seqid}\t{entry.begin}\t{entry.end}\t{entry.strand}\t{entry.source}\n")
 
         # wrtite in GFF format
-        out = open(opt.output, 'w')
         gff = Dotdict(gff_template.copy())
         gff.sequence = entry.sequence[:-1]  # remove +/- added for sorting by strand
         gff.begin = begin_min
