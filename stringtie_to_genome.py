@@ -21,7 +21,7 @@ def seq_begin_sorter(data):
     return
 
 
-def advance_sequence(ggen, sgen):
+def advance_sequence(gen):
     """---------------------------------------------------------------------------------------------
     advance the pointer that is behind until both are on the chromosome. Assumes that g and s are
     seq_begin_sorter generators
@@ -36,6 +36,35 @@ def advance_sequence(ggen, sgen):
         s = next(sgen)
 
     return True
+
+
+def overlap(gen):
+    """---------------------------------------------------------------------------------------------
+    find overlapping regions in data. features that begin and end at the same base are considered to
+    overlap
+
+    :param data: list           list of Dotdict, list should be sorted
+    :param start: int           row to start at
+    :return: list               overlapping rows
+    ---------------------------------------------------------------------------------------------"""
+    new = next(gen)
+    region = [new]
+    stop = new.end
+    sequence = new.sequence
+
+    for new in gen:
+        if new.sequence == sequence and new.begin < stop:
+            # add to current overlap region
+            region.append(new)
+            stop = max(stop, new.end)
+        else:
+            # start a new region
+            yield region
+            region = [new]
+            stop = new.end
+            sequence = new.sequence
+
+    return
 
 
 # --------------------------------------------------------------------------------------------------
@@ -60,8 +89,23 @@ if __name__ == '__main__':
     genome.attribute_add('source', 'GFF', 0, n_genes)
     genome.attribute_add('source', 'GTF', n_genes, n_genes + n_transcripts)
 
+    # add the strand to the sequence name so that positive and negative strands will
+    # not be merged - kind of a kludge
+    for row in genome.data:
+        row['sequence'] = row['sequence'] + row['strand']
+
     g_order = seq_begin_sorter(genome)
-    for entry in g_order:
-        print(f"{entry.sequence}\t{entry.begin}\t{entry.end}\t{entry.source}")
+    n_overlap = 0
+    for group in overlap(g_order):
+        print(f'overlap group {n_overlap}')
+        n_overlap += 1
+
+        for entry in group:
+            if entry.source == 'GFF':
+                id = entry.ID
+            else:
+                id = entry.transcript_id
+
+            print(f"{entry.sequence}\t{id}\t{entry.begin}\t{entry.end}\t{entry.strand}\t{entry.source}")
 
     exit(0)
