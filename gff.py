@@ -174,7 +174,7 @@ class Gff:
 
         :return:
         -----------------------------------------------------------------------------------------"""
-        field = line.split(maxsplit=8)
+        field = line.rstrip().split(maxsplit=8)
         parsed = {}
         for i in range(len(field)):
             # extract the 9 defined columns
@@ -214,14 +214,28 @@ class Gff:
         """-----------------------------------------------------------------------------------------
         Generator for lines that match a feature tag
 
-        :param key: str, string matching a feature in column 3
-        :param start: int, line on which to start
-        :return:
+        :param key: str         string matching a feature in column 3
+        :param start: int       row on which to start
+        :yield: int, Dotdict    row number, next matching entry
         -----------------------------------------------------------------------------------------"""
         data = self.data
         for n in range(start, len(data)):
             if data[n]['feature'] == key:
                 yield n, data[n]
+
+        return
+
+    def get_by_sequence(self, seqid):
+        """-----------------------------------------------------------------------------------------
+        Generator for entries that match a specific sequence (column 0)
+
+        :param seqid: string        id of sequence
+        :yield: Dotdict             next matching entry
+        -----------------------------------------------------------------------------------------"""
+        data = self.data
+        for row in data:
+            if row['sequence'] == seqid:
+                yield Dotdict(row)
 
         return
 
