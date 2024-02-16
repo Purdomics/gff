@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
             sys.stderr.write(f"{entry.sequence}\t{seqid}\t{entry.begin}\t{entry.end}\t{entry.strand}\t{entry.source}\n")
 
-        # wrtite in GFF format
+        # write in GFF format
         gff = Dotdict(gff_template.copy())
         gff.sequence = entry.sequence[:-1]  # remove +/- added for sorting by strand
         gff.begin = begin_min
